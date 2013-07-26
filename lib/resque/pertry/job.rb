@@ -24,7 +24,6 @@ module Resque
 
         # Perform a job
         def perform(args = {})
-        binding.pry
           raise ArgumentError, "Invalid arguments, expecting a Hash but got: #{args.inspect}" unless Hash === args
 
           args.symbolize_keys!
