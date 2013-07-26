@@ -3,6 +3,11 @@ module Resque
     module Persistence
       extend ActiveSupport::Concern
 
+      included do
+        # define all jobs as persistent by default
+        persistent
+      end
+
       module ClassMethods
 
         # Set job as persistent

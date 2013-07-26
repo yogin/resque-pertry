@@ -1,15 +1,13 @@
 module Resque
   module Pertry
-    class Job
+    module Job
+      extend ActiveSupport::Concern
       include Resque::Pertry::Persistence
       include Resque::Pertry::Retry
 
       JOB_HASH = :_pertry
 
-      # define all jobs as persistent by default
-      #persistent
-
-      class << self
+      module ClassMethods
 
         # Enqueue a job
         def enqueue(args = {})
