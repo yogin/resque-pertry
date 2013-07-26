@@ -10,16 +10,26 @@ module Resque
           @persistent = true
         end
 
-        # Check if job is persistent
-        def persistent?
-          @persistent
+        def non_persistent
+          @persistent = false
         end
 
-      end
+        # Check if job is persistent
+        def persistent?
+          !!@persistent
+        end
 
-      # Create persistent job
-      def persist!
-        # TODO add job to database
+        # Resque before_enqueue hook
+        def before_enqueue_pertry_persistence(args = {})
+          args[Resque::Pertry::Job::JOB_HASH] ||= {}
+          args[Resque::Pertry::Job::JOB_HASH][:audit_it] = UUIDTools::UUID.random_create.to_s
+          args[Resque::Pertry::Job::JOB_HASH][:queue_time] = Time.now.to_i
+          args[Resque::Pertry::Job::JOB_HASH][:persist] = persistent?
+
+          # continue with enqueue
+          true
+        end
+
       end
 
     end

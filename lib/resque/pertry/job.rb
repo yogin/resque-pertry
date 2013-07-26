@@ -1,86 +1,109 @@
 module Resque
   module Pertry
     class Job
+      include Resque::Pertry::Persistence
+      include Resque::Pertry::Retry
+
+      JOB_HASH = :_pertry
+
+      # define all jobs as persistent by default
+      #persistent
 
       class << self
 
-        def enqueue(args = {}, audit_id = nil)
+        # Enqueue a job
+        def enqueue(args = {})
           raise ArgumentError, "Invalid arguments, expecting a Hash but got: #{args.inspect}" unless Hash === args
 
           args.symbolize_keys!
           args = check_arguments(args)
-          args[:_queue_time] = Time.now.to_i
-          args[:_audit_id] = audit_id || UUIDTools::UUID.random_create.to_s
+          raise ArgumentError, "Invalid arguments, #{JOB_HASH} is a reserved argument!" if args.key?(JOB_HASH)
 
           Resque.enqueue(self, args)
         end
 
+        # Perform a job
         def perform(args = {})
+        binding.pry
           raise ArgumentError, "Invalid arguments, expecting a Hash but got: #{args.inspect}" unless Hash === args
 
           args.symbolize_keys!
-          new(check_arguments(args), args[:_queue_time], args[:_audit_id]).perform
+          raise ArgumentError, "Job is not supported, missing key #{JOB_HASH} from payload #{args.inspect}" unless args.key?(JOB_HASH)
+
+          new(check_arguments(args), args[JOB_HASH]).perform
         end
 
+        # Specificy job queue
         def in_queue(queue)
           @queue = queue.to_sym
         end
         
+        # Get job queue
         def queue
           @queue or raise ArgumentError, "No queue defined for job #{self.name}!"
         end
 
+        # Define required job attributes
         def needs(*arguments)
           arguments.each do |argument|
             if Hash === argument
               argument.each do |key, default|
-                self.required_arguments << { :argument => key, :default => default }
+                self.required_arguments << { :name => key, :default => default }
               end
             else
-              self.required_arguments << { :argument => argument }
+              self.required_arguments << { :name => argument }
             end
           end
         end
 
+        # List of required attributes
         def required_arguments
           @required_arguments ||= []
         end
 
         private
 
+        # Check that job arguments match required arguments
         def check_arguments(provided_arguments)
           required_arguments.inject({}) do |checked_arguments, argument|
-            raise ArgumentError, "Missing required argument #{argument[:argument]} from #{arguments.inspect}" unless provided_arguments.member?(argument[:argument] || argument.member?(:default)
+            raise ArgumentError, "Missing required argument #{argument[:name]} from #{arguments.inspect}" unless provided_arguments.member?(argument[:name]) || argument.member?(:default)
 
-            provided_argument = provided_arguments[argument[:argument]] || argument[:default]
+            provided_argument = provided_arguments[argument[:name]] || argument[:default]
             # TODO check that provided_argument is serializable as json
-            checked_arguments[argument[:argument]] = provided_argument
 
+            checked_arguments[argument[:name]] = provided_argument
             checked_arguments
           end
         end
 
       end
 
-      def initialize(arguments, queue_time, audit_id)
+      def initialize(arguments, job_properties)
+        set_job_arguments(arguments)
+        set_job_properties(job_properties)
+      end
+
+      # Perform method needs to be overridden in job classes
+      def perform
+        raise NoMethodError, "No method #{self.class.name}#perform defined!"
+      end
+
+      def arguments
+        @_arguments
+      end
+
+      private
+
+      def set_job_properties(hash)
+        @_job_properties ||= {}
+        @_job_properties.merge!(hash)
+      end
+
+      def set_job_arguments(hash)
+        @_arguments = hash
         arguments.each do |key, val|
           instance_variable_set("@#{key}", val)
         end
-
-        @_queue_time = Time.at(queue_time)
-        @_audit_id = audit_id
-      end
-
-      def queue_time
-        @_queue_time
-      end
-
-      def audit_id
-        @_audit_id
-      end
-
-      def perform
-        raise NoMethodError, "No method #{self.class.name}#perform defined!"
       end
 
     end

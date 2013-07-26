@@ -22,6 +22,23 @@ module Resque
         def retry_exceptions(exceptions)
         end
 
+        # Check if we will retry this job on failure
+        def retryable?
+          true
+        end
+
+        # Resque before_enqueue hook
+        def before_enqueue_pertry_retry(args = {})
+          return unless retryable?
+
+          args[Resque::Pertry::Job::JOB_HASH] ||= {}
+          args[Resque::Pertry::Job::JOB_HASH][:attempt] ||= 0
+          args[Resque::Pertry::Job::JOB_HASH][:attempt] += 1
+
+          # continue with enqueue
+          true
+        end
+
       end
 
       # Checks if we can retry
