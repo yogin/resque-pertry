@@ -12,7 +12,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "pry"
 
-  s.add_dependency "activesupport", ">= 3.0.0"
   s.add_dependency "resque"
+  s.add_dependency "activesupport", ">= 3.0.0"
+  s.add_dependency "activerecord", ">= 3.0.0"
   s.add_dependency "uuidtools", "~> 2.1.4"
 end
