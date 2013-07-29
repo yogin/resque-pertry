@@ -9,6 +9,10 @@ module Resque
             t.string :job, :null => false
             t.text :arguments, :null => false, :limit => 64.kilobytes + 1
             t.integer :attempt, :default => 1
+            t.datetime :enqueued_at
+            t.datetime :completed_at
+            t.datetime :failed_at
+            t.datetime :last_tried_at
             t.timestamps
           end
 

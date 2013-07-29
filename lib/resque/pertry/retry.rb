@@ -21,7 +21,12 @@ module Resque
           @retry_attemps = Integer(count)
         end
 
-       # Sets a list of exceptions that we want to retry
+        # Sets the maximum time-to-live of the job, after which no attempts will ever be made
+        def retry_ttl(ttl)
+          @retry_ttl = Integer(ttl)
+        end
+
+        # Sets a list of exceptions that we want to retry
         # If none are set, we will retry every exceptions
         def retry_exceptions(exceptions)
           raise ArgumentError, "Expecting an array of exceptions, but we got #{exceptions.inspect}" unless Array === exceptions
@@ -33,16 +38,15 @@ module Resque
           @retry_attempts || @retry_delays
         end
 
-        # Resque before_enqueue hook
-        def before_enqueue_pertry_00_retry(args = {})
-          #return unless retryable?
+        # Resque around_perform hook
+        def around_perform_pertry_00_retry(args = {})
+          ResquePertryPersistence.trying_job(self, args)
 
-          args[Resque::Pertry::Job::JOB_HASH] ||= {}
-          args[Resque::Pertry::Job::JOB_HASH][:attempt] ||= 0
-          args[Resque::Pertry::Job::JOB_HASH][:attempt] += 1
+          yield
+        end
 
-          # continue with enqueue
-          true
+        # Resque on_failure hook (job failed)
+        def on_failure_pertry_00_retry(exception, args = {})
         end
 
       end
