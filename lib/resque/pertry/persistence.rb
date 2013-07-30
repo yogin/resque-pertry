@@ -26,13 +26,15 @@ module Resque
 
         # Resque before_enqueue hook
         def before_enqueue_pertry_99_persistence(args = {})
-          args[Resque::Pertry::Job::JOB_HASH] ||= {}
-          args[Resque::Pertry::Job::JOB_HASH]['audit_id'] = UUIDTools::UUID.random_create.to_s
-          args[Resque::Pertry::Job::JOB_HASH]['queue_time'] = Time.now
-          args[Resque::Pertry::Job::JOB_HASH]['persist'] = persistent?
+          pertry_key = Resque::Pertry::Job::JOB_HASH.to_s
+
+          args[pertry_key] ||= {}
+          args[pertry_key]['audit_id'] ||= UUIDTools::UUID.random_create.to_s
+          args[pertry_key]['queue_time'] ||= Time.now
+          args[pertry_key]['persist'] = persistent?
 
           if persistent?
-            ResquePertryPersistence.create_job(self, args)
+            ResquePertryPersistence.create_job_if_needed(self, args)
           end
 
           # continue with enqueue

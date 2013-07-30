@@ -24,10 +24,14 @@ module Resque
         def perform(args = {})
           raise ArgumentError, "Invalid arguments, expecting a Hash but got: #{args.inspect}" unless Hash === args
 
+          instance(args).perform
+        end
+
+        def instance(args = {})
           args.symbolize_keys!
           raise ArgumentError, "Job is not supported, missing key #{JOB_HASH} from payload #{args.inspect}" unless args.key?(JOB_HASH)
 
-          new(check_arguments(args), args[JOB_HASH]).perform
+          new(check_arguments(args), args[JOB_HASH])
         end
 
         # Specificy job queue
@@ -87,6 +91,10 @@ module Resque
 
       def arguments
         @_arguments
+      end
+
+      def payload
+        @_arguments.merge(JOB_HASH => @_job_properties)
       end
 
       private
