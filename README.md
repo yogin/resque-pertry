@@ -1,4 +1,3 @@
-
 resque-pertry
 =============
 
@@ -8,7 +7,7 @@ It's a work in progress.
 Cheers!
 
 Setup
-=====
+-----
 
 ```ruby
 gem 'resque-pertry'
@@ -32,7 +31,7 @@ $ VERBOSE=1 rake environment resque:scheduler
 ```
 
 Usage
-=====
+-----
 
 Your resque job needs to extend `Resque::Pertry::Job` :
 
