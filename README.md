@@ -27,7 +27,9 @@ end
 
 You will also need to start [resque-scheduler](https://github.com/bvandenbos/resque-scheduler)
 
-  $ VERBOSE=1 rake environment resque:scheduler
+```
+$ VERBOSE=1 rake environment resque:scheduler
+```
 
 Usage
 =====
@@ -37,6 +39,9 @@ You resque job need to extend `Resque::Pertry::Job` :
 ```ruby
 class HeavyLiftingJob
   extend Resque::Pertry::Job
+
+  # specify Resque queue
+  in_queue :critical
 
   def perform
     # do some heavy lifting here
@@ -62,6 +67,9 @@ In your job class, you specify the arguments with `needs` :
 class HeavyLiftingJob
   extend Resque::Pertry::Job
 
+  # specify Resque queue
+  in_queue :critical
+
   needs :user_id, :image_id
 
   def perform
@@ -82,6 +90,9 @@ Finally you can specify if your job should be persistent or not, and if it is, t
 ```ruby
 class HeavyLiftingJob
   extend Resque::Pertry::Job
+
+  # specify Resque queue
+  in_queue :critical
 
   # Set the persistence of the job using either:
   #   persistent
