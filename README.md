@@ -34,7 +34,7 @@ $ VERBOSE=1 rake environment resque:scheduler
 Usage
 =====
 
-You resque job need to extend `Resque::Pertry::Job` :
+Your resque job needs to extend `Resque::Pertry::Job` :
 
 ```ruby
 class HeavyLiftingJob
@@ -78,14 +78,15 @@ class HeavyLiftingJob
 end
 ```
 
-The arguments will `user_id` and `image_id` will there be accessible as instance variable `@user_id` and `@image_id`
-You can also specify a default value in your needs:
+The arguments `user_id` and `image_id` will then be accessible as instance variables `@user_id` and `@image_id`
+You can also specify a default value for your needs:
 
 ```ruby
 needs :user_id, :image_id, :action => "delete"
 ```
 
-Finally you can specify if your job should be persistent or not, and if it is, the properties to retry failed persistent jobs:
+Finally you can specify if your job should be persistent or not, and if it is, the properties to retry failed persistent jobs.
+Non persistent jobs won't be retried at all.
 
 ```ruby
 class HeavyLiftingJob
