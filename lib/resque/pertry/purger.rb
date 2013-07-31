@@ -43,10 +43,6 @@ module Resque
           purge_persistence
         end
 
-        # purge all backends from all failed jobs
-        def purge_all
-        end
-
         # display status of failed queues and persistence table
         def status
           show_config
@@ -79,10 +75,9 @@ module Resque
         # intercept signals
         def register_signal_handlers
           trap("TERM") { shutdown }
-          trap("INT") { shutdown }
+          trap("INT")  { shutdown }
           trap("QUIT") { shutdown }
           trap("USR1") { status }
-          trap("USR2") { purge_all }
         end
 
         def show_config
@@ -150,7 +145,6 @@ module Resque
           failed_jobs = redis.lrange(:failed, 0, failed_jobs_limit - 1)
           return 0 if failed_jobs.empty?
 
-          # trim the queue
           log("purging #{failed_jobs.size} failed jobs from #{redis.id}")
           #redis.ltrim(:failed, failed_jobs.size, -1)
 
@@ -176,16 +170,20 @@ module Resque
           add_stat("purged from database", failed_jobs.size)
         end
 
-        # run hook
+        # run hook after_redis_purge
         def run_after_redis_purge(job)
           return unless @after_redis_purge
           @after_redis_purge.call(job)
+        rescue => e
+          log!("exception #{e.inspect} while running hook after_redis_purge on job #{job.inspect}")
         end
 
-        # run hook
+        # run hook after_persistence_purge
         def run_after_persistence_purge(job)
           return unless @after_persistence_purge
           @after_persistence_purge.call(job)
+        rescue => e
+          log!("exception #{e.inspect} while running hook after_persistence_purge on job #{job.inspect}")
         end
 
         # only print if verbose is turned on
