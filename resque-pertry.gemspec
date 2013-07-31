@@ -1,11 +1,12 @@
 Gem::Specification.new do |s|
   s.name        = "resque-pertry"
-  s.description = "Use MySQL to add job persistence, and job retry mechanism"
-  s.version     = "0.0.1"
+  s.description = "Adds persistence to Resque jobs, and retry properties"
+  s.version     = "1.0.0"
   s.authors     = [ "Anthony Powles" ]
   s.email       = "rubygems+resque-pertry@idreamz.net"
-  s.summary     = "Resque job persistence and retry mechanism"
+  s.summary     = "Allows job to be persistent, and be retried in case of failure"
   s.homepage    = "https://github.com/yogin/resque-pertry"
+  s.license     = "MIT"
   s.files       = `git ls-files`.split($/)
 
   s.add_development_dependency "bundler", "~> 1.3"
