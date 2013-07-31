@@ -3,6 +3,11 @@ module Resque
     module Retry
       extend ActiveSupport::Concern
 
+      included do
+        # set a default max number of retry attempts
+        set_retry_attempts 1
+      end
+
       module ClassMethods
         
         # Sets a number of seconds to wait before retrying
