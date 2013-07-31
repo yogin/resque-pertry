@@ -1,6 +1,6 @@
 module Resque
-  module Pertry
-    module Job
+  module Plugins
+    module Pertry
       extend ActiveSupport::Concern
       include Resque::Pertry::Persistence
       include Resque::Pertry::Retry

@@ -128,9 +128,9 @@ module Resque
       end
 
       def max_attempt_reached?(model)
-        if self.class.retry_attempts && self.class.retry_attempts <= model.attempt
+        if self.class.retry_attempts && self.class.retry_attempts < model.attempt
           true
-        elsif self.class.retry_delays && self.class.retry_delays.size <= model.attempt
+        elsif self.class.retry_delays && self.class.retry_delays.size < model.attempt
           true
         else
           false

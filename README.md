@@ -14,6 +14,13 @@ Setup
 gem 'resque-pertry'
 ```
 
+Wherever you include resque's tasks, you should add:
+
+```ruby
+require 'resque/tasks'
+require 'resque/pertry/tasks'
+```
+
 You'll need to run a migration to create the persistence table.
 
 ```ruby
@@ -26,9 +33,11 @@ end
 ```
 
 You will also need to start [resque-scheduler](https://github.com/bvandenbos/resque-scheduler)
+and the resque pertry purger
 
 ```
 $ VERBOSE=1 rake environment resque:scheduler
+$ rake environment resque:pertry:purger
 ```
 
 Usage

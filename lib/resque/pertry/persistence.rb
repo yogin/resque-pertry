@@ -26,7 +26,7 @@ module Resque
 
         # Resque before_enqueue hook
         def before_enqueue_pertry_99_persistence(args = {})
-          pertry_key = Resque::Pertry::Job::JOB_HASH.to_s
+          pertry_key = Resque::Plugins::Pertry::JOB_HASH.to_s
 
           args[pertry_key] ||= {}
           args[pertry_key]['audit_id'] ||= UUIDTools::UUID.random_create.to_s

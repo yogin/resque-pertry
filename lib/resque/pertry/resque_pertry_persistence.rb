@@ -51,7 +51,7 @@ module Resque
         private
 
         def field_from_args(field, args)
-          pertry_hash = args[Resque::Pertry::Job::JOB_HASH] || args[Resque::Pertry::Job::JOB_HASH.to_s] || {}
+          pertry_hash = args[Resque::Plugins::Pertry::JOB_HASH] || args[Resque::Plugins::Pertry::JOB_HASH.to_s] || {}
           pertry_hash[field]
         end
 
