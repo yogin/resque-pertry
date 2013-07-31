@@ -1,4 +1,3 @@
-
 resque-pertry
 =============
 
@@ -8,7 +7,7 @@ It's a work in progress.
 Cheers!
 
 Setup
-=====
+-----
 
 ```ruby
 gem 'resque-pertry'
@@ -41,7 +40,7 @@ $ rake environment resque:pertry:purger
 ```
 
 Usage
-=====
+-----
 
 Your resque job needs to extend `Resque::Pertry::Job` :
 
