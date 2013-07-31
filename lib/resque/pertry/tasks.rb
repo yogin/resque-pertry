@@ -7,7 +7,7 @@ namespace :resque do
   namespace :pertry do
     desc "Start Resque Pertry database and failed queue purger"
     task :purger => :pertry_setup do
-      $stdout.puts "done!"
+      Resque::Pertry::Purger.run
     end
 
     task :pertry_setup do
