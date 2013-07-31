@@ -13,11 +13,11 @@ module Resque
         attr_writer :failed_jobs_limit
 
         def sleep_time
-          @sleep_time ||= 5.seconds #10.minutes
+          @sleep_time ||= 5.minutes
         end
 
         def failed_jobs_limit
-          @failed_jobs_limit ||= 10
+          @failed_jobs_limit ||= 100
         end
 
         def stats
@@ -40,7 +40,7 @@ module Resque
           add_stat(:loops, 1)
 
           purge_resque
-          purge_persistence
+          purge_database
         end
 
         # display status of failed queues and persistence table
@@ -55,8 +55,8 @@ module Resque
         end
 
         # allows an app to set a hook to deal with the failed persistence table job
-        def after_persistence_purge(&block)
-          @after_persistence_purge = block
+        def after_database_purge(&block)
+          @after_database_purge = block
         end
 
         private
@@ -156,7 +156,7 @@ module Resque
         end
 
         # purge resque-pertry persistence table
-        def purge_persistence
+        def purge_database
           failed_jobs = ResquePertryPersistence.finnished.limit(failed_jobs_limit)
           return 0 if failed_jobs.empty?
 
@@ -164,8 +164,8 @@ module Resque
 
           failed_jobs.each do |failed_job|
             #ResquePertryPersistence.destroy(failed_job.id)
-            run_after_persistence_purge(failed_job)
-          end if @after_persistence_purge
+            run_after_database_purge(failed_job)
+          end if @after_database_purge
 
           add_stat("purged from database", failed_jobs.size)
         end
@@ -178,12 +178,12 @@ module Resque
           log!("exception #{e.inspect} while running hook after_redis_purge on job #{job.inspect}")
         end
 
-        # run hook after_persistence_purge
-        def run_after_persistence_purge(job)
-          return unless @after_persistence_purge
-          @after_persistence_purge.call(job)
+        # run hook after_database_purge
+        def run_after_database_purge(job)
+          return unless @after_database_purge
+          @after_database_purge.call(job)
         rescue => e
-          log!("exception #{e.inspect} while running hook after_persistence_purge on job #{job.inspect}")
+          log!("exception #{e.inspect} while running hook after_database_purge on job #{job.inspect}")
         end
 
         # only print if verbose is turned on
