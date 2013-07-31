@@ -20,6 +20,10 @@ module Resque
           @failed_jobs_limit ||= 10
         end
 
+        def stats
+          @stats ||= {}
+        end
+
         # main loop
         def run
           setup
@@ -33,7 +37,9 @@ module Resque
         # run a purge cycle
         def purge
           procline("working")
-          #purge_resque
+          add_stat(:loops, 1)
+
+          purge_resque
           purge_persistence
         end
 
@@ -43,6 +49,8 @@ module Resque
 
         # display status of failed queues and persistence table
         def status
+          show_config
+          show_info
         end
 
         # allows an app to set a hook to deal with the failed redis job
@@ -59,7 +67,12 @@ module Resque
 
         # purger setup and init
         def setup
+          stats[:pid] = Process.pid
+          stats[:started] = Time.now
+          stats[:loops] = 0
+
           procline("starting")
+          status
           register_signal_handlers
         end
 
@@ -72,9 +85,27 @@ module Resque
           trap("USR2") { purge_all }
         end
 
+        def show_config
+          log("Configuration:")
+          [ :sleep_time, :failed_jobs_limit ].each do |v|
+            log("\tconfig #{v} = #{send(v)}")
+          end
+        end
+
+        def show_info
+          with_redis do |redis|
+            set_stat("failed queue length on #{redis.id}", redis.llen(:failed))
+          end
+          
+          log!("Status:")
+          stats.each do |key, value|
+            log!("\t#{key} : #{value}")
+          end
+        end
+
         # just sleep for a while
         def wait
-          procline("sleeping")
+          procline("sleeping for #{sleep_time} seconds")
           sleep(sleep_time)
         end
 
@@ -86,18 +117,28 @@ module Resque
 
         # update process line
         def procline(string)
+          log(string)
           $0 = "resque-pertry purger: #{string}"
         end
 
         # purge jobs in the failed queue
         def purge_resque
+          with_redis do |redis|
+            purge_redis(redis)
+          end
+       end
+
+        def with_redis(&block)
+          return {} unless block_given?
+
           # testing the redis class name so we don't have to require resque_redis_composite
           case Resque.redis.redis.class.name
           when "Redis"
-            purge_redis(Resque.redis)
+            { redis.id => block.call(Resque.redis) }
           when "Resque::RedisComposite"
-            Resque.redis.mapping.reduce(0) do |total, (queue, redis)|
-              total += purge_redis(redis)
+            Resque.redis.mapping.reduce({}) do |results, (queue, redis)|
+              results[redis.id] = block.call(redis)
+              results
             end
           else
             raise NotImplementedError, "Unsupported redis client #{Resque.redis.inspect}"
@@ -110,26 +151,29 @@ module Resque
           return 0 if failed_jobs.empty?
 
           # trim the queue
-          redis.ltrim(:failed, failed_jobs.size, -1)
+          log("purging #{failed_jobs.size} failed jobs from #{redis.id}")
+          #redis.ltrim(:failed, failed_jobs.size, -1)
 
           failed_jobs.each do |failed_job|
             run_after_redis_purge(failed_job)
           end if @after_redis_purge
 
-          failed_jobs.size
+          add_stat("purged from #{redis.id}", failed_jobs.size)
         end
 
         # purge resque-pertry persistence table
         def purge_persistence
-          failed_jobs = ResquePertryPersistence.failed.limit(failed_jobs_limit)
+          failed_jobs = ResquePertryPersistence.finnished.limit(failed_jobs_limit)
           return 0 if failed_jobs.empty?
 
+          log("purging #{failed_jobs.size} completed or failed jobs from database")
+
           failed_jobs.each do |failed_job|
-            ResquePertryPersistence.destroy(failed_job.id)
+            #ResquePertryPersistence.destroy(failed_job.id)
             run_after_persistence_purge(failed_job)
           end if @after_persistence_purge
 
-          failed_jobs.size
+          add_stat("purged from database", failed_jobs.size)
         end
 
         # run hook
@@ -142,6 +186,26 @@ module Resque
         def run_after_persistence_purge(job)
           return unless @after_persistence_purge
           @after_persistence_purge.call(job)
+        end
+
+        # only print if verbose is turned on
+        def log(string)
+          log!(string) if verbose
+        end
+
+        # always print this string
+        def log!(string)
+          $stdout.puts "#{Time.now.strftime("%Y-%m-%d %H:%M:%S.%L")} - #{string}"
+        end
+
+        def add_stat(stat, value)
+          stats[stat] ||= 0
+          stats[stat] += value
+          value
+        end
+
+        def set_stat(stat, value)
+          stats[stat] = value
         end
 
       end
