@@ -4,6 +4,11 @@ module Resque
 
       self.table_name = "resque_pertry_persistence"
 
+      scope :completed, -> { where("completed_at IS NOT NULL").order(:updated_at) }
+      scope :failed,    -> { where("failed_at IS NOT NULL").order(:updated_at) }
+      scope :finnished, -> { where("completed_at IS NOT NULL OR failed_at IS NOT NULL").order(:updated_at) }
+      scope :ongoing,   -> { where(:completed_at => nil, :failed_at => nil).order(:updated_at) }
+
       class << self
 
         def create_job_if_needed(klass, args)
@@ -14,7 +19,7 @@ module Resque
             # creating a new job
             new(  :audit_id => field_from_args('audit_id', args),
                   :job => klass.to_s,
-                  :arguments => args.to_json, 
+                  :arguments => Resque.encode(args), 
                   :attempt => 0,
                   :enqueued_at => field_from_args('queue_time', args)).save!
           end
@@ -59,6 +64,10 @@ module Resque
 
       def has_completed?
         completed_at
+      end
+
+      def payload
+        @payload ||= Resque.decode(arguments)
       end
 
     end
