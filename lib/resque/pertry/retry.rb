@@ -12,6 +12,7 @@ module Resque
         
         # Sets a number of seconds to wait before retrying
         def set_retry_delay(delay)
+          properties.delete(:retry_delays)
           properties[:retry_delay] = Integer(delay)
         end
         
@@ -21,6 +22,8 @@ module Resque
 
         # Sets a list of delays (list length will be the # of attempts)
         def set_retry_delays(*delays)
+          properties.delete(:retry_attempts)
+          properties.delete(:retry_delay)
           properties[:retry_delays] = Array(delays).map { |delay| Integer(delay) }
         end
 
@@ -30,6 +33,7 @@ module Resque
 
         # Sets the maximum number of times we will retry
         def set_retry_attempts(count)
+          properties.delete(:retry_delays)
           properties[:retry_attempts] = Integer(count)
         end
 
