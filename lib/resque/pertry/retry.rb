@@ -12,6 +12,9 @@ module Resque
 
         # set a default max number of retry attempts
         set_retry_attempts 1
+
+        # set job to expire in 1 week (we need a default so we can purge the database)
+        set_retry_ttl 1.week
       end
 
       module ClassMethods

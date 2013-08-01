@@ -13,6 +13,7 @@ module Resque
             t.datetime :completed_at
             t.datetime :failed_at
             t.datetime :last_tried_at
+            t.datetime :expires_at
             t.timestamps
           end
 

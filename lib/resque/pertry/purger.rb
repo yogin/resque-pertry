@@ -158,17 +158,17 @@ module Resque
 
         # purge resque-pertry persistence table
         def purge_database
-          failed_jobs = ResquePertryPersistence.finnished.limit(failed_jobs_limit)
-          return 0 if failed_jobs.empty?
+          jobs = ResquePertryPersistence.finnished_or_expired.limit(failed_jobs_limit)
+          return 0 if jobs.empty?
 
-          log("purging #{failed_jobs.size} completed or failed jobs from database")
+          log("purging #{jobs.size} completed, failed, or expired jobs from database")
 
-          failed_jobs.each do |failed_job|
-            ResquePertryPersistence.destroy(failed_job.id)
-            run_after_database_purge(failed_job)
+          jobs.each do |job|
+            ResquePertryPersistence.destroy(job.id)
+            run_after_database_purge(job)
           end if @after_database_purge
 
-          add_stat("purged from database", failed_jobs.size)
+          add_stat("purged from database", jobs.size)
         end
 
         # run hook after_redis_purge

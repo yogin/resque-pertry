@@ -4,10 +4,13 @@ module Resque
 
       self.table_name = "resque_pertry_persistence"
 
-      scope :completed, -> { where("completed_at IS NOT NULL").order(:updated_at) }
-      scope :failed,    -> { where("failed_at IS NOT NULL").order(:updated_at) }
-      scope :finnished, -> { where("completed_at IS NOT NULL OR failed_at IS NOT NULL").order(:updated_at) }
-      scope :ongoing,   -> { where(:completed_at => nil, :failed_at => nil).order(:updated_at) }
+      default_scope order(:updated_at)
+      scope :completed, -> { where("completed_at IS NOT NULL") }
+      scope :failed,    -> { where("failed_at IS NOT NULL") }
+      scope :finnished, -> { where("completed_at IS NOT NULL OR failed_at IS NOT NULL") }
+      scope :ongoing,   -> { where(:completed_at => nil, :failed_at => nil) }
+      scope :expired,   -> { where("expires_at < ?", Time.now) }
+      scope :finnished_or_expired, -> { where("completed_at IS NOT NULL OR failed_at IS NOT NULL OR expires_at < ?", Time.now) }
 
       class << self
 
@@ -17,11 +20,17 @@ module Resque
             return if job
 
             # creating a new job
-            new(  :audit_id => field_from_args('audit_id', args),
-                  :job => klass.to_s,
-                  :arguments => Resque.encode(args), 
-                  :attempt => 0,
-                  :enqueued_at => field_from_args('queue_time', args)).save!
+            params = {
+              :audit_id => field_from_args('audit_id', args),
+              :job => klass.to_s,
+              :arguments => Resque.encode(args), 
+              :attempt => 0,
+              :enqueued_at => field_from_args('queue_time', args)
+            }
+
+            params[:expires_at] = params[:enqueued_at] + klass.retry_ttl if klass.retry_ttl
+
+            new(params).save!
           end
         end
 

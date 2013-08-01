@@ -146,8 +146,9 @@ To retry a persistent job, you have several properties you can set:
 The default settings for all persistent jobs are:
 
 ```ruby
-# retry a failed job once, enqueue the job immediately
+# retry a failed job once, enqueue the job immediately, job expires in 1 week
 set_retry_attempts 1
+set_retry_ttl 1.week
 ```
 
 Here are some exemples of retry settings:
