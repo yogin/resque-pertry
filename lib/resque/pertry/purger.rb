@@ -107,6 +107,7 @@ module Resque
         # shutdown the process
         def shutdown
           procline("shutting down")
+          status
           exit
         end
 
@@ -146,10 +147,10 @@ module Resque
           return 0 if failed_jobs.empty?
 
           log("purging #{failed_jobs.size} failed jobs from #{redis.id}")
-          #redis.ltrim(:failed, failed_jobs.size, -1)
+          redis.ltrim(:failed, failed_jobs.size, -1)
 
           failed_jobs.each do |failed_job|
-            run_after_redis_purge(failed_job)
+            run_after_redis_purge(failed_job, redis)
           end if @after_redis_purge
 
           add_stat("purged from #{redis.id}", failed_jobs.size)
@@ -163,7 +164,7 @@ module Resque
           log("purging #{failed_jobs.size} completed or failed jobs from database")
 
           failed_jobs.each do |failed_job|
-            #ResquePertryPersistence.destroy(failed_job.id)
+            ResquePertryPersistence.destroy(failed_job.id)
             run_after_database_purge(failed_job)
           end if @after_database_purge
 
@@ -171,9 +172,9 @@ module Resque
         end
 
         # run hook after_redis_purge
-        def run_after_redis_purge(job)
+        def run_after_redis_purge(job, redis)
           return unless @after_redis_purge
-          @after_redis_purge.call(job)
+          @after_redis_purge.call(job, redis)
         rescue => e
           log!("exception #{e.inspect} while running hook after_redis_purge on job #{job.inspect}")
         end
