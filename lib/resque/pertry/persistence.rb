@@ -54,6 +54,14 @@ module Resque
 
       end
 
+      def audit_id
+        @_job_properties['audit_id']
+      end
+
+      def queue_time
+        @_job_properties['queue_time']
+      end
+
     end
   end
 end

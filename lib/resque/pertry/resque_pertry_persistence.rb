@@ -4,7 +4,7 @@ module Resque
 
       self.table_name = "resque_pertry_persistence"
 
-      default_scope order(:updated_at)
+      default_scope -> { order(:updated_at) }
       scope :completed, -> { where("completed_at IS NOT NULL") }
       scope :failed,    -> { where("failed_at IS NOT NULL") }
       scope :finnished, -> { where("completed_at IS NOT NULL OR failed_at IS NOT NULL") }
