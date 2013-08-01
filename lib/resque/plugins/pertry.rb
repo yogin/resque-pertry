@@ -3,19 +3,10 @@ module Resque
     class Pertry
       JOB_HASH = :_pertry
 
+      include Resque::Pertry::Persistence
+      include Resque::Pertry::Retry
+
       class << self
-
-        attr_accessor :properties
-
-        def properties
-          @properties ||= {}
-        end
-
-        # Propagate properties to subclass
-        def inherited(subclass)
-          super
-          subclass.properties = properties
-        end
 
         # Enqueue a job
         def enqueue(args = {})
@@ -75,7 +66,7 @@ module Resque
         # Check that job arguments match required arguments
         def check_arguments(provided_arguments)
           required_arguments.inject({}) do |checked_arguments, argument|
-            raise ArgumentError, "Missing required argument #{argument[:name]} from #{arguments.inspect}" unless provided_arguments.member?(argument[:name]) || argument.member?(:default)
+            raise ArgumentError, "#{self} is missing required argument #{argument[:name]} from #{provided_arguments.inspect}" unless provided_arguments.member?(argument[:name]) || argument.member?(:default)
 
             provided_argument = provided_arguments[argument[:name]] || argument[:default]
             # TODO check that provided_argument is serializable as json
@@ -118,9 +109,6 @@ module Resque
           instance_variable_set("@#{key}", val)
         end
       end
-
-      include Resque::Pertry::Persistence
-      include Resque::Pertry::Retry
 
     end
   end

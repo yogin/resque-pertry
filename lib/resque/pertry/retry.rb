@@ -4,6 +4,12 @@ module Resque
       extend ActiveSupport::Concern
 
       included do
+        class_attribute :_retry_delays
+        class_attribute :_retry_delay
+        class_attribute :_retry_attempts
+        class_attribute :_retry_ttl
+        class_attribute :_retry_exceptions
+
         # set a default max number of retry attempts
         set_retry_attempts 1
       end
@@ -12,52 +18,52 @@ module Resque
         
         # Sets a number of seconds to wait before retrying
         def set_retry_delay(delay)
-          properties.delete(:retry_delays)
-          properties[:retry_delay] = Integer(delay)
+          self._retry_delays = nil
+          self._retry_delay = Integer(delay)
         end
         
         def retry_delay
-          properties[:retry_delay]
+          self._retry_delay
         end
 
         # Sets a list of delays (list length will be the # of attempts)
         def set_retry_delays(*delays)
-          properties.delete(:retry_attempts)
-          properties.delete(:retry_delay)
-          properties[:retry_delays] = Array(delays).map { |delay| Integer(delay) }
+          self._retry_attempts = nil
+          self._retry_delay = nil
+          self._retry_delays = Array(delays).map { |delay| Integer(delay) }
         end
 
         def retry_delays
-          properties[:retry_delays]
+          self._retry_delays
         end
 
         # Sets the maximum number of times we will retry
         def set_retry_attempts(count)
-          properties.delete(:retry_delays)
-          properties[:retry_attempts] = Integer(count)
+          self._retry_delays = nil
+          self._retry_attempts = Integer(count)
         end
 
         def retry_attempts
-          properties[:retry_attempts]
+          self._retry_attempts
         end
 
         # Sets the maximum time-to-live of the job, after which no attempts will ever be made
         def set_retry_ttl(ttl)
-          properties[:retry_ttl] = Integer(ttl)
+          self._retry_ttl = Integer(ttl)
         end
 
         def retry_ttl
-          properties[:retry_ttl]
+          self._retry_ttl
         end
 
         # Sets a list of exceptions that we want to retry
         # If none are set, we will retry every exceptions
         def set_retry_exceptions(*exceptions)
-          properties[:retry_exceptions] = Array(exceptions)
+          self._retry_exceptions = Array(exceptions)
         end
 
         def retry_exceptions
-          properties[:retry_exceptions]
+          self._retry_exceptions
         end
 
         # Check if we will retry this job on failure

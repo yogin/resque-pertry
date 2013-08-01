@@ -4,24 +4,28 @@ module Resque
       extend ActiveSupport::Concern
 
       included do
+        class_attribute :_persistent
+
         # define all jobs as persistent by default
         persistent
       end
 
       module ClassMethods
-
+        
         # Set job as persistent
         def persistent
-          properties[:persistent] = true
+          self._persistent = true
         end
+        alias_method :durable, :persistent
 
         def non_persistent
-          properties[:persistent] = false
+          self._persistent = false
         end
+        alias_method :non_durable, :non_persistent
 
         # Check if job is persistent
         def persistent?
-          !!properties[:persistent]
+          !!self._persistent
         end
 
         # Resque before_enqueue hook
