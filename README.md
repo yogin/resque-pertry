@@ -39,7 +39,7 @@ The purger's default values will have it run every 5 minutes, and purge 100 fail
 You can add hooks in your application if you want to process the purged jobs further (you may want to log the jobs you are purging):
 
 ```ruby
-Resque::Pertry::Purger.after_redis_purge do |job|
+Resque::Pertry::Purger.after_redis_purge do |job,redis|
   # do something with this job from resque's failed queue
 end
 
@@ -51,11 +51,10 @@ end
 Usage
 -----
 
-Your resque job needs to include `Resque::Plugins::Pertry` :
+Your resque jobs need to inherit from `Resque::Plugins::Pertry` :
 
 ```ruby
-class SomeJob
-  include Resque::Plugins::Pertry
+class SomeJob < Resque::Plugins::Pertry
 
   # specify Resque queue
   in_queue :critical
@@ -81,8 +80,7 @@ SomeJob.enqueue(:user_id => 42, :image_id => 24)
 In your job class, you specify the arguments with `needs` :
 
 ```ruby
-class SomeJob
-  include Resque::Plugins::Pertry
+class SomeJob < Resque::Plugins::Pertry
 
   # specify Resque queue
   in_queue :critical
@@ -108,8 +106,7 @@ All jobs including `Resque::Plugins::Pertry` are persistent by default. Non pers
 To set a job as non persistent, simply:
 
 ```ruby
-class SomeJob
-  include Resque::Plugins::Pertry
+class SomeJob < Resque::Plugins::Pertry
 
   # set job as non persistent, acts like a regular resque job
   non_persistent
