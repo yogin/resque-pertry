@@ -28,12 +28,14 @@ module Resque
 
         def finnish_job(klass, args)
           with_job(klass, args) do |job|
+            return unless job
             job.update_attribute(:completed_at, Time.now)
           end
         end
 
         def trying_job(klass, args)
           with_job(klass, args) do |job|
+            return unless job
             job.update_attributes(  :last_tried_at => Time.now,
                                     :attempt => job.attempt + 1)
           end
@@ -41,6 +43,7 @@ module Resque
 
         def fail_job(klass, args)
           with_job(klass, args) do |job|
+            return unless job
             job.update_attribute(:failed_at, Time.now)
           end
         end
