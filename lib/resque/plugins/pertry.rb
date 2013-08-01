@@ -1,13 +1,21 @@
 module Resque
   module Plugins
-    module Pertry
-      extend ActiveSupport::Concern
-      include Resque::Pertry::Persistence
-      include Resque::Pertry::Retry
-
+    class Pertry
       JOB_HASH = :_pertry
 
-      module ClassMethods
+      class << self
+
+        attr_accessor :properties
+
+        def properties
+          @properties ||= {}
+        end
+
+        # Propagate properties to subclass
+        def inherited(subclass)
+          super
+          subclass.properties = properties
+        end
 
         # Enqueue a job
         def enqueue(args = {})
@@ -110,6 +118,9 @@ module Resque
           instance_variable_set("@#{key}", val)
         end
       end
+
+      include Resque::Pertry::Persistence
+      include Resque::Pertry::Retry
 
     end
   end

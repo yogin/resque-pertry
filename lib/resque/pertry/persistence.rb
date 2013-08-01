@@ -12,16 +12,16 @@ module Resque
 
         # Set job as persistent
         def persistent
-          @persistent = true
+          properties[:persistent] = true
         end
 
         def non_persistent
-          @persistent = false
+          properties[:persistent] = false
         end
 
         # Check if job is persistent
         def persistent?
-          !!@persistent
+          !!properties[:persistent]
         end
 
         # Resque before_enqueue hook

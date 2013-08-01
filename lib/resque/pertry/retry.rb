@@ -12,48 +12,48 @@ module Resque
         
         # Sets a number of seconds to wait before retrying
         def set_retry_delay(delay)
-          @retry_delay = Integer(delay)
+          properties[:retry_delay] = Integer(delay)
         end
         
         def retry_delay
-          @retry_delay
+          properties[:retry_delay]
         end
 
         # Sets a list of delays (list length will be the # of attempts)
         def set_retry_delays(*delays)
-          @retry_delays = Array(delays).map { |delay| Integer(delay) }
+          properties[:retry_delays] = Array(delays).map { |delay| Integer(delay) }
         end
 
         def retry_delays
-          @retry_delays
+          properties[:retry_delays]
         end
 
         # Sets the maximum number of times we will retry
         def set_retry_attempts(count)
-          @retry_attempts = Integer(count)
+          properties[:retry_attempts] = Integer(count)
         end
 
         def retry_attempts
-          @retry_attempts
+          properties[:retry_attempts]
         end
 
         # Sets the maximum time-to-live of the job, after which no attempts will ever be made
         def set_retry_ttl(ttl)
-          @retry_ttl = Integer(ttl)
+          properties[:retry_ttl] = Integer(ttl)
         end
 
         def retry_ttl
-          @retry_ttl
+          properties[:retry_ttl]
         end
 
         # Sets a list of exceptions that we want to retry
         # If none are set, we will retry every exceptions
         def set_retry_exceptions(*exceptions)
-          @retry_exceptions = Array(exceptions)
+          properties[:retry_exceptions] = Array(exceptions)
         end
 
         def retry_exceptions
-          @retry_exceptions
+          properties[:retry_exceptions]
         end
 
         # Check if we will retry this job on failure
