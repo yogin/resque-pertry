@@ -124,11 +124,7 @@ module Resque
         delay = delay_before_retry(model)
         return false unless delay
 
-        if delay > 0
-          Resque.enqueue_in(delay, self.class, payload)
-        else
-          Resque.enqueue(self.class, payload)
-        end
+        Resque.enqueue_in(delay, self.class, payload)
       end
 
       def exception_whitelisted?(model, exception)
