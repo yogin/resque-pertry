@@ -102,16 +102,13 @@ module Resque
       def retry?(model, exception)
         # check the obvious
         return false unless model
-        return false if model.has_completed?
+        return false unless model.retryable?
 
         # job has used up all it's allowed attempts
         return false if max_attempt_reached?(model)
 
         # job exception is not whitelisted for retries
         return false unless exception_whitelisted?(model, exception)
-
-        # job has expired
-        return false if ttl_expired?(model)
 
         # seems like we should be able to retry this job
         return true
@@ -132,13 +129,6 @@ module Resque
         return true unless self.class.retry_exceptions
 
         self.class.retry_exceptions.include?(exception.class)
-      end
-
-      def ttl_expired?(model)
-        # if we didn't set a ttl, it hasn't expired
-        return false unless self.class.retry_ttl
-
-        model.expires_at < Time.now
       end
 
       def max_attempt_reached?(model)
