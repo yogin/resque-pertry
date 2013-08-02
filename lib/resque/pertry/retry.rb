@@ -142,7 +142,7 @@ module Resque
         # if we didn't set a ttl, it hasn't expired
         return false unless self.class.retry_ttl
 
-        ( model.enqueued_at + self.class.retry_ttl ) < Time.now
+        model.expires_at < Time.now
       end
 
       def max_attempt_reached?(model)
