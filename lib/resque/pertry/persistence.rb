@@ -59,7 +59,7 @@ module Resque
       end
 
       def queue_time
-        @_job_properties['queue_time']
+        Time.parse(@_job_properties['queue_time'])
       end
 
     end
