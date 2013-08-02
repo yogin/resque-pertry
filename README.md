@@ -176,3 +176,15 @@ set_retry_delay 30.seconds
 set_retry_exceptions ActiveRecord::ConnectionTimeoutError
 ```
 
+TODO
+----
+
+Write some specs!
+
+How to contribute
+-----------------
+
+Tell me what you think about this gem, things you like or don't about it, how it could be better.
+Pull Requests most welcomed.
+
+
