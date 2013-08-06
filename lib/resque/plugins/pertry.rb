@@ -6,6 +6,8 @@ module Resque
       include Resque::Pertry::Persistence
       include Resque::Pertry::Retry
 
+      attr_reader :exception_handled
+
       class << self
 
         # Enqueue a job
@@ -23,7 +25,13 @@ module Resque
         def perform(args = {})
           raise ArgumentError, "Invalid arguments, expecting a Hash but got: #{args.inspect}" unless Hash === args
 
-          instance(args).perform
+          begin
+            job = instance(args)
+            job.perform
+          rescue => e
+            job.handle_exception(e)
+            raise unless job.exception_handled
+          end
         end
 
         def instance(args = {})
@@ -86,6 +94,31 @@ module Resque
       # Perform method needs to be overridden in job classes
       def perform
         raise NoMethodError, "No method #{self.class.name}#perform defined!"
+      end
+
+      def handle_exception(exception)
+        # we don't handle exceptions by default, leave it for resque
+        # when overridding this method, if you decide you want to completely
+        # handle it, and not pass it back to resque, you'll need to call
+        # exception_handled!
+      end
+
+      def exception_handled
+        @exception_handled ||= false
+      end
+
+      def exception_handled!
+        @exception_handled = true
+      end
+
+      # mark job as failed, won't be retried
+      def fail!
+        Resque::Pertry::ResquePertryPersistence.fail_job(self.class, payload)
+      end
+
+      # mark job as complete
+      def complete!
+        Resque::Pertry::ResquePertryPersistence.finnish_job(self.class, payload)
       end
 
       def arguments
