@@ -78,6 +78,14 @@ module Resque
         completed_at
       end
 
+      def expired?
+        expires_at < Time.now
+      end
+
+      def finnished?
+        completed_at || failed_at || expired?
+      end
+
       def payload
         @payload ||= Resque.decode(arguments)
       end
