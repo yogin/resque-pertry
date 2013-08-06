@@ -115,11 +115,13 @@ module Resque
       def fail!
         Resque::Pertry::ResquePertryPersistence.fail_job(self.class, payload)
       end
+      alias_method :fail_job!, :fail!
 
       # mark job as complete
       def complete!
         Resque::Pertry::ResquePertryPersistence.finnish_job(self.class, payload)
       end
+      alias_method :complete_job!, :complete!
 
       def arguments
         @_arguments
