@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = "resque-pertry"
   s.description = "Adds persistence to Resque jobs, and retry properties"
-  s.version     = "1.0.0"
+  s.version     = "1.0.1"
   s.authors     = [ "Anthony Powles" ]
   s.email       = "rubygems+resque-pertry@idreamz.net"
   s.summary     = "Allows job to be persistent, and be retried in case of failure"
