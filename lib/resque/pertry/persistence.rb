@@ -62,6 +62,10 @@ module Resque
         Time.parse(@_job_properties['queue_time'])
       end
 
+      def model
+        @model ||= ResquePertryPersistence.find_by_audit_id(audit_id)
+      end
+
     end
   end
 end
