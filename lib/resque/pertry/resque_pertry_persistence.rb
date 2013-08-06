@@ -77,16 +77,20 @@ module Resque
 
       end
 
-      def has_completed?
+      def completed?
         completed_at
       end
-
+      
       def expired?
         expires_at < Time.now
       end
 
+      def failed?
+        failed_at
+      end
+
       def finnished?
-        completed_at || failed_at || expired?
+        completed? || failed? || expired?
       end
 
       def payload
