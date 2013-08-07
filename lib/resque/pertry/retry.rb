@@ -22,7 +22,7 @@ module Resque
         # Sets a number of seconds to wait before retrying
         def set_retry_delay(delay)
           self._retry_delays = nil
-          self._retry_delay = Integer(delay)
+          self._retry_delay = delay == :clear ? nil : Integer(delay)
         end
         
         def retry_delay
@@ -31,8 +31,8 @@ module Resque
 
         # Sets a list of delays (list length will be the # of attempts)
         def set_retry_delays(*delays)
-          self._retry_attempts = nil
-          self._retry_delay = nil
+          set_retry_attempts :clear
+          set_retry_delay :clear
           self._retry_delays = Array(delays).map { |delay| Integer(delay) }
         end
 
@@ -43,7 +43,7 @@ module Resque
         # Sets the maximum number of times we will retry
         def set_retry_attempts(count)
           self._retry_delays = nil
-          self._retry_attempts = Integer(count)
+          self._retry_attempts = count == :clear ? nil : Integer(count)
         end
 
         def retry_attempts
@@ -52,7 +52,7 @@ module Resque
 
         # Sets the maximum time-to-live of the job, after which no attempts will ever be made
         def set_retry_ttl(ttl)
-          self._retry_ttl = Integer(ttl)
+          self._retry_ttl = ttl == :clear ? nil : Integer(ttl)
         end
 
         def retry_ttl
