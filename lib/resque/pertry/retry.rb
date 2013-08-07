@@ -69,6 +69,16 @@ module Resque
           self._retry_exceptions
         end
 
+        # Quickly reset all retry properties
+        # Useful if you have a base job class
+        def reset_retry_properties
+          self._retry_delays = nil
+          self._retry_attempts = nil
+          self._retry_delays = nil
+          self._retry_ttl = nil
+          self._retry_exceptions = nil
+        end
+
         # Check if we will retry this job on failure
         # There has to be a constraint on the number of times we will retry a failing job
         # or have a ttl, otherwise we could be retrying job endlessly
