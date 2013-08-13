@@ -29,6 +29,8 @@ module Resque
             job = instance(args)
             job.perform
           rescue => e
+            raise unless job
+
             job.handle_exception(e)
             raise unless job.exception_handled
           end
