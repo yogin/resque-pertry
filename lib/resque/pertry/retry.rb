@@ -109,7 +109,7 @@ module Resque
       end
 
       # Checks if we can retry
-      def retry?(model, exception)
+      def retry?(model, exception = nil)
         # check the obvious
         return false unless model
         return false if model.finnished?
@@ -125,7 +125,7 @@ module Resque
       end
 
       # Retry the job
-      def retry!(model, exception)
+      def retry!(model, exception = nil)
         return false unless retry?(model, exception)
 
         delay = delay_before_retry(model)
