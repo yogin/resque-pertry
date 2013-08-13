@@ -34,7 +34,6 @@ module Resque
           end
         end
 
-
         def finnish_job(klass, args)
           with_job(klass, args) do |job|
             return unless job
@@ -95,6 +94,10 @@ module Resque
 
       def payload
         @payload ||= Resque.decode(arguments)
+      end
+
+      def resque_job
+        job.constantize.instance(payload)
       end
 
     end
